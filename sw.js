@@ -12,7 +12,7 @@
  *
  * I dati (clienti, ore) NON passano da qui: stanno in localStorage e non vengono mai toccati.
  */
-const VERSIONE = "v1";
+const VERSIONE = "v2";
 const CACHE_APP = `planner-app-${VERSIONE}`;
 const CACHE_ESTERNI = "planner-esterni-v1";
 

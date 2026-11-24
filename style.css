@@ -6,6 +6,7 @@
     --verde: #65fa8a;
     --rosso: #ff8a80;
     --viola: #b52fbd;        /* barre dei grafici: rosa scuro, contrasto >= 3:1 su bianco */
+    --viola-chiaro: #f0cdf2; /* binario della barra "incassato": stessa tinta, più chiara */
     --griglia: #e6e6e6;      /* linee della griglia, appena staccate dal bianco */
     --testo-secondario: #4a4a4a;
     --grigio: #e4e4e4;
@@ -418,9 +419,11 @@ input[type="radio"]{
     margin-bottom: 1rem;
 }
 
-/* selettore a segmenti Mese / Anno / Sempre */
+/* selettore a segmenti Mese / Anno / Sempre: tre colonne uguali, larghe quanto la scritta più lunga */
 fieldset.segmenti{
     flex: 0 0 auto;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
     gap: 0;
     padding: 0;
     background-color: var(--bianco);
@@ -430,6 +433,8 @@ fieldset.segmenti{
 .segmenti label{
     position: relative;
     flex-direction: row;
+    justify-content: center;
+    white-space: nowrap;
     padding: 0.35rem 0.85rem;
     cursor: pointer;
 }
@@ -449,6 +454,20 @@ fieldset.segmenti{
     position: absolute;
     opacity: 0;
     pointer-events: none;
+}
+
+/* La scritta occupa da subito lo spazio della sua versione in grassetto (copia invisibile
+   sotto, alta 0): selezionandola non si allarga e non esce dal riquadro. */
+.segmento-testo{
+    display: inline-grid;
+}
+
+.segmento-testo::after{
+    content: attr(data-testo);
+    height: 0;
+    overflow: hidden;
+    visibility: hidden;
+    font-weight: 800;
 }
 
 .segmenti label:has(input:checked){
@@ -486,7 +505,9 @@ fieldset.segmenti{
 }
 
 .hero-valore{
-    font-size: 3rem;
+    /* 3rem sui telefoni normali; più piccolo solo su schermi molto stretti,
+       così "€" non va a capo da solo */
+    font-size: clamp(2rem, 12.5vw, 3rem);
     font-weight: 800;
     line-height: 1.1;
     overflow-wrap: anywhere;
@@ -494,6 +515,54 @@ fieldset.segmenti{
 
 .hero-confronto{
     color: var(--testo-secondario);
+}
+
+/* incassato / da incassare */
+.incasso{
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 0.25rem;
+}
+
+.meter{
+    height: 0.75rem;
+    background-color: var(--viola-chiaro);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.meter-riempimento{
+    height: 100%;
+    background-color: var(--viola);
+    border-radius: 0 4px 4px 0;
+}
+
+.incasso-legenda{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1.25rem;
+}
+
+.incasso-legenda > span{
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.chiave{
+    width: 0.75rem;
+    height: 0.75rem;
+    border-radius: 2px;
+}
+
+.chiave-incassato{
+    background-color: var(--viola);
+}
+
+.chiave-da-incassare{
+    background-color: var(--viola-chiaro);
+    box-shadow: inset 0 0 0 1px var(--viola);
 }
 
 .kpi{
@@ -704,6 +773,7 @@ fieldset.segmenti{
 
 .bottom-bar{
     position: fixed;
+    z-index: 10; /* sempre sopra il contenuto che scorre (es. gli interruttori) */
     bottom: 0;
     left: 0;
     width: 100%;

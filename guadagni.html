@@ -33,9 +33,10 @@
             <div class="filtri">
                 <fieldset class="segmenti">
                     <legend class="sr-only">Periodo</legend>
-                    <label><input type="radio" name="tipo" value="mese" checked> Mese</label>
-                    <label><input type="radio" name="tipo" value="anno"> Anno</label>
-                    <label><input type="radio" name="tipo" value="sempre"> Sempre</label>
+                    <!-- data-testo: riserva lo spazio del grassetto, così la scritta selezionata non esce dal riquadro -->
+                    <label><input type="radio" name="tipo" value="mese" checked><span class="segmento-testo" data-testo="Mese">Mese</span></label>
+                    <label><input type="radio" name="tipo" value="anno"><span class="segmento-testo" data-testo="Anno">Anno</span></label>
+                    <label><input type="radio" name="tipo" value="sempre"><span class="segmento-testo" data-testo="Sempre">Sempre</span></label>
                 </fieldset>
                 <div class="navigatore" id="navigatore">
                     <button type="button" id="precedente" aria-label="Periodo precedente"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></button>
@@ -54,6 +55,15 @@
                     <h2 class="etichetta">Guadagnato</h2>
                     <p class="hero-valore" id="totale"></p>
                     <p class="hero-confronto" id="confronto"></p>
+                    <div class="incasso" id="incasso">
+                        <div class="meter" id="meter-incasso" role="img">
+                            <div class="meter-riempimento" id="meter-riempimento"></div>
+                        </div>
+                        <div class="incasso-legenda">
+                            <span><span class="chiave chiave-incassato" aria-hidden="true"></span>Incassato <strong id="incassato"></strong></span>
+                            <span><span class="chiave chiave-da-incassare" aria-hidden="true"></span>Da incassare <strong id="da-incassare"></strong></span>
+                        </div>
+                    </div>
                 </section>
 
                 <div class="kpi">

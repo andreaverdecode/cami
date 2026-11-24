@@ -53,11 +53,14 @@ function sposta(p, passi) {
 function riepilogo(attivita) {
     let centesimi = 0;
     let minuti = 0;
+    let daIncassare = 0;
     for (const a of attivita) {
-        centesimi += Dati.importo(a);
+        const importo = Dati.importo(a);
+        centesimi += importo;
         minuti += a.minuti;
+        if (!a.saldato) daIncassare += importo;
     }
-    return { centesimi, minuti, numero: attivita.length };
+    return { centesimi, minuti, daIncassare, incassato: centesimi - daIncassare, numero: attivita.length };
 }
 
 function nelPeriodo(attivita, p) {
@@ -117,6 +120,17 @@ function mostraTotali(attivita, tutte) {
         ? `${UI.euro(Math.round((corrente.centesimi * 60) / corrente.minuti))}/h`
         : "—";
 
+    // Incassato / da incassare: barra piena = quota già pagata.
+    el("incasso").hidden = corrente.centesimi === 0;
+    if (corrente.centesimi > 0) {
+        const quota = corrente.incassato / corrente.centesimi;
+        el("meter-riempimento").style.width = `${quota * 100}%`;
+        el("meter-incasso").setAttribute("aria-label",
+            `Incassato il ${Math.round(quota * 100)}%: ${UI.euro(corrente.incassato)} su ${UI.euro(corrente.centesimi)}`);
+        el("incassato").textContent = UI.euro(corrente.incassato);
+        el("da-incassare").textContent = UI.euro(corrente.daIncassare);
+    }
+
     // Confronto con il periodo precedente (non ha senso per "sempre").
     const confronto = el("confronto");
     confronto.replaceChildren();
@@ -161,7 +175,8 @@ function mostraClienti(attivita, clienti) {
         const riga = UI.daModello(el("modello-riga-cliente"), {
             nome: r.nome,
             importo: UI.euro(r.centesimi),
-            dettaglio: `${UI.durata(r.minuti)} · ${quota}% del totale`,
+            dettaglio: `${UI.durata(r.minuti)} · ${quota}% del totale`
+                + (r.daIncassare > 0 ? ` · da incassare ${UI.euro(r.daIncassare)}` : " · tutto incassato"),
         });
         riga.querySelector(".classifica-riempimento").style.width = massimo > 0 ? `${(r.centesimi / massimo) * 100}%` : "0";
         return riga;

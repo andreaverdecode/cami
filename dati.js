@@ -4,9 +4,9 @@
  * Tutti i dati stanno in UNA sola chiave di localStorage ("planner"):
  *
  *   {
- *     versione: 2,
+ *     versione: 3,
  *     clienti:  [{ id, nome, tariffaCentesimi, attivo, creatoIl }],
- *     attivita: [{ id, clienteId, data, minuti, tariffaCentesimi, creatoIl }]
+ *     attivita: [{ id, clienteId, data, minuti, tariffaCentesimi, saldato, creatoIl }]
  *   }
  *
  * Regole sul formato:
@@ -18,7 +18,9 @@
  *   così se in futuro cambi la tariffa i conteggi passati restano corretti;
  * - i clienti hanno un id univoco: le attività si collegano all'id, non al nome;
  * - un cliente non attivo ("spento") non si può scegliere per nuove attività,
- *   ma le sue attività passate restano.
+ *   ma le sue attività passate restano;
+ * - un'attività "saldata" è già stata pagata: cambiare la paga del cliente
+ *   non la ricalcola.
  *
  * Ogni modifica rilegge l'archivio dal disco subito prima di scrivere, così
  * due schede aperte contemporaneamente non si sovrascrivono a vicenda.
@@ -28,7 +30,7 @@ const Dati = (() => {
 
     const CHIAVE = "planner";
     const CHIAVE_VECCHIA = "clienti"; // formato del primo commit: [{ cliente, paga }]
-    const VERSIONE = 2;
+    const VERSIONE = 3;
 
     /*
      * Migrazioni del formato: MIGRAZIONI[n] porta l'archivio dalla versione n
@@ -39,6 +41,10 @@ const Dati = (() => {
         // 1 -> 2: i clienti possono essere spenti
         1(archivio) {
             for (const cliente of archivio.clienti) cliente.attivo ??= true;
+        },
+        // 2 -> 3: le attività possono essere segnate come saldate
+        2(archivio) {
+            for (const attivita of archivio.attivita) attivita.saldato ??= false;
         },
     };
 
@@ -254,6 +260,7 @@ const Dati = (() => {
      * Se la paga cambia e il cliente ha attività salvate, `applica` dice a quali applicarla:
      * - "tutte":   a tutte le attività del cliente;
      * - "da-oggi": solo a quelle con data da oggi in poi (le precedenti restano com'erano).
+     * Le attività già saldate non vengono mai ricalcolate: quell'importo è già stato pagato.
      * In ogni caso le attività registrate da qui in avanti useranno la nuova paga.
      * @param {{ id: string, nome: string, tariffa: string|number, applica?: "tutte"|"da-oggi" }} campi
      */
@@ -268,14 +275,14 @@ const Dati = (() => {
             throw new ErroreValidazione(`Esiste già un cliente di nome "${nomePulito}".`, "nome");
         }
 
-        const sueAttivita = archivio.attivita.filter((a) => a.clienteId === id);
-        if (tariffaCentesimi !== cliente.tariffaCentesimi && sueAttivita.length > 0) {
+        const nonSaldate = archivio.attivita.filter((a) => a.clienteId === id && !a.saldato);
+        if (tariffaCentesimi !== cliente.tariffaCentesimi && nonSaldate.length > 0) {
             let daAggiornare;
             if (applica === "tutte") {
-                daAggiornare = sueAttivita;
+                daAggiornare = nonSaldate;
             } else if (applica === "da-oggi") {
                 const dataOggi = oggi();
-                daAggiornare = sueAttivita.filter((a) => a.data >= dataOggi);
+                daAggiornare = nonSaldate.filter((a) => a.data >= dataOggi);
             } else {
                 throw new ErroreValidazione("Scegli a quali attività applicare la nuova paga.", "applica");
             }
@@ -354,6 +361,7 @@ const Dati = (() => {
             data,
             minuti,
             tariffaCentesimi: cliente.tariffaCentesimi,
+            saldato: false,
             creatoIl: new Date().toISOString(),
         };
         archivio.attivita.push(attivita);
@@ -379,6 +387,13 @@ const Dati = (() => {
         attivita.tariffaCentesimi = tariffaCentesimi;
         scrivi(archivio);
         return attivita;
+    }
+
+    /** Segna un'attività come saldata (pagata) o da saldare. */
+    function impostaSaldato(id, saldato) {
+        const archivio = carica();
+        trovaAttivita(archivio, id).saldato = Boolean(saldato);
+        scrivi(archivio);
     }
 
     function eliminaAttivita(id) {
@@ -417,6 +432,7 @@ const Dati = (() => {
         aggiungiAttivita,
         modificaAttivita,
         eliminaAttivita,
+        impostaSaldato,
         euroInCentesimi,
         importo,
         oggi,
