@@ -5,7 +5,9 @@
 const UI = (() => {
     "use strict";
 
-    const formatoEuro = new Intl.NumberFormat("it-IT", { style: "currency", currency: "EUR" });
+    // useGrouping "always": "2.118,50 €" invece di "2118,50 €" (in italiano il punto delle migliaia
+    // di default compare solo da 5 cifre in su)
+    const formatoEuro = new Intl.NumberFormat("it-IT", { style: "currency", currency: "EUR", useGrouping: "always" });
     const formatoData = new Intl.DateTimeFormat("it-IT", {
         weekday: "short",
         day: "numeric",

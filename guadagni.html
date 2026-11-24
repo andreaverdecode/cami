@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="it">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+        <title>Guadagni · Planner</title>
+        <link rel="stylesheet" href="style.css">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Sniglet:wght@400;800&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+        <script src="dati.js" defer></script>
+        <script src="ui.js" defer></script>
+        <script src="guadagni.js" defer></script>
+    </head>
+    <body>
+        <main class="dashboard">
+            <h1>Guadagni</h1>
+
+            <!-- Filtro del periodo: vale per tutto quello che c'è sotto -->
+            <div class="filtri">
+                <fieldset class="segmenti">
+                    <legend class="sr-only">Periodo</legend>
+                    <label><input type="radio" name="tipo" value="mese" checked> Mese</label>
+                    <label><input type="radio" name="tipo" value="anno"> Anno</label>
+                    <label><input type="radio" name="tipo" value="sempre"> Sempre</label>
+                </fieldset>
+                <div class="navigatore" id="navigatore">
+                    <button type="button" id="precedente" aria-label="Periodo precedente"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></button>
+                    <span id="etichetta-periodo" aria-live="polite"></span>
+                    <button type="button" id="successivo" aria-label="Periodo successivo"><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
+                </div>
+            </div>
+
+            <p class="messaggio" id="nessun-dato" hidden>
+                Non hai ancora registrato nessuna ora. Inizia dalla pagina
+                <a href="index.html">Ore lavorate</a>.
+            </p>
+
+            <div class="dashboard-contenuto" id="contenuto">
+                <section class="card hero">
+                    <h2 class="etichetta">Guadagnato</h2>
+                    <p class="hero-valore" id="totale"></p>
+                    <p class="hero-confronto" id="confronto"></p>
+                </section>
+
+                <div class="kpi">
+                    <section class="card stat">
+                        <h2 class="etichetta">Ore lavorate</h2>
+                        <p class="stat-valore" id="ore"></p>
+                    </section>
+                    <section class="card stat">
+                        <h2 class="etichetta">Paga media</h2>
+                        <p class="stat-valore" id="media"></p>
+                    </section>
+                </div>
+
+                <section class="card">
+                    <h2>Per cliente</h2>
+                    <p class="messaggio-card" id="per-cliente-vuoto" hidden>Nessuna attività in questo periodo.</p>
+                    <ul class="classifica" id="per-cliente"></ul>
+                </section>
+
+                <section class="card" id="sezione-andamento">
+                    <h2 id="titolo-andamento">Andamento</h2>
+                    <p class="messaggio-card" id="andamento-vuoto" hidden>Nessuna attività in questo periodo.</p>
+                    <figure class="grafico" id="grafico" aria-labelledby="titolo-andamento">
+                        <div class="grafico-asse-y" id="asse-y" aria-hidden="true"></div>
+                        <div class="grafico-piano" id="piano" tabindex="0"
+                             aria-label="Grafico dell'andamento: usa le frecce sinistra e destra per leggere i valori">
+                            <div class="grafico-griglia" id="griglia" aria-hidden="true"></div>
+                            <div class="grafico-colonne" id="colonne"></div>
+                            <div class="grafico-tooltip" id="tooltip" role="status" hidden>
+                                <strong id="tooltip-valore"></strong>
+                                <span id="tooltip-etichetta"></span>
+                            </div>
+                        </div>
+                        <div></div>
+                        <div class="grafico-asse-x" id="asse-x" aria-hidden="true"></div>
+                    </figure>
+                    <details class="vista-tabella" id="vista-tabella">
+                        <summary>Mostra come tabella</summary>
+                        <table>
+                            <thead>
+                                <tr><th scope="col">Periodo</th><th scope="col">Ore</th><th scope="col">Guadagno</th></tr>
+                            </thead>
+                            <tbody id="tabella"></tbody>
+                        </table>
+                    </details>
+                </section>
+            </div>
+        </main>
+
+        <template id="modello-riga-cliente">
+            <li class="classifica-riga">
+                <div class="classifica-testo">
+                    <span class="classifica-nome" data-campo="nome"></span>
+                    <span class="classifica-valore" data-campo="importo"></span>
+                </div>
+                <div class="classifica-barra"><div class="classifica-riempimento"></div></div>
+                <small data-campo="dettaglio"></small>
+            </li>
+        </template>
+
+        <nav class="bottom-bar" aria-label="Navigazione principale">
+            <a href="clienti.html" aria-label="Clienti"><i class="fa-solid fa-user" aria-hidden="true"></i></a>
+            <a href="index.html" aria-label="Ore lavorate"><i class="fa-solid fa-briefcase" aria-hidden="true"></i></a>
+            <a href="guadagni.html" class="active" aria-current="page" aria-label="Guadagni"><i class="fa-solid fa-money-bill-wave" aria-hidden="true"></i></a>
+        </nav>
+    </body>
+</html>

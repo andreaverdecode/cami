@@ -5,6 +5,9 @@
     --rosa: #f29ff5;
     --verde: #65fa8a;
     --rosso: #ff8a80;
+    --viola: #b52fbd;        /* barre dei grafici: rosa scuro, contrasto >= 3:1 su bianco */
+    --griglia: #e6e6e6;      /* linee della griglia, appena staccate dal bianco */
+    --testo-secondario: #4a4a4a;
     --grigio: #e4e4e4;
     --nero: #000000;
     --bianco: #ffffff;
@@ -306,6 +309,304 @@ input[type="radio"]{
     .interruttore input::before{
         transition: none;
     }
+}
+
+/* ---------- utilità ---------- */
+
+/* nascosto alla vista ma letto dai lettori di schermo */
+.sr-only{
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* ---------- dashboard ---------- */
+
+.dashboard-contenuto{
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.filtri{
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+/* selettore a segmenti Mese / Anno / Sempre */
+fieldset.segmenti{
+    flex: 0 0 auto;
+    gap: 0;
+    padding: 0;
+    background-color: var(--bianco);
+    box-shadow: var(--ombra);
+}
+
+.segmenti label{
+    position: relative;
+    flex-direction: row;
+    padding: 0.35rem 0.85rem;
+    cursor: pointer;
+}
+
+.segmenti label + label{
+    border-left: var(--bordo);
+}
+
+.segmenti input{
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.segmenti label:has(input:checked){
+    background-color: var(--rosa);
+    font-weight: 800;
+}
+
+.segmenti label:has(input:focus-visible){
+    outline: 3px solid var(--nero);
+    outline-offset: -6px;
+}
+
+/* ‹ Novembre 2026 › */
+.navigatore{
+    flex: 1 1 14rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.navigatore button{
+    width: 2.5rem;
+    flex-shrink: 0;
+}
+
+.navigatore span{
+    flex: 1;
+    text-align: center;
+    font-weight: 800;
+}
+
+.etichetta{
+    font-size: 1rem;
+    font-weight: 400;
+}
+
+.hero-valore{
+    font-size: 3rem;
+    font-weight: 800;
+    line-height: 1.1;
+    overflow-wrap: anywhere;
+}
+
+.hero-confronto{
+    color: var(--testo-secondario);
+}
+
+.kpi{
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.card.stat{
+    gap: 0.25rem;
+}
+
+.stat-valore{
+    font-size: 1.4rem;
+    font-weight: 800;
+    line-height: 1.2;
+    text-wrap: balance; /* "22 h / 15 min" invece di lasciare "min" da solo */
+}
+
+.messaggio-card{
+    color: var(--testo-secondario);
+}
+
+/* classifica per cliente: barre orizzontali, la più lunga è il cliente che rende di più */
+.classifica{
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.classifica-testo{
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.classifica-nome{
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.classifica-valore{
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.classifica-barra{
+    height: 0.75rem;
+    margin: 0.25rem 0;
+}
+
+.classifica-riempimento{
+    height: 100%;
+    min-width: 2px;
+    background-color: var(--viola);
+    border-radius: 0 4px 4px 0; /* arrotondata in fondo, dritta sulla linea di partenza */
+}
+
+.classifica small{
+    color: var(--testo-secondario);
+}
+
+/* grafico a colonne */
+.grafico{
+    margin: 0;
+    padding-top: 0.5rem;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    column-gap: 0.5rem;
+}
+
+.grafico-asse-y{
+    position: relative;
+    height: 10rem;
+    min-width: 3.25rem;
+    font-size: 0.75rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--testo-secondario);
+}
+
+.grafico-asse-y span{
+    position: absolute;
+    right: 0;
+    transform: translateY(50%);
+    white-space: nowrap;
+}
+
+.grafico-piano{
+    position: relative;
+    height: 10rem;
+    border-bottom: 1px solid var(--nero);
+    touch-action: pan-y;
+}
+
+.grafico-piano:focus-visible{
+    outline: 3px solid var(--rosa);
+    outline-offset: 4px;
+}
+
+.grafico-griglia span{
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background-color: var(--griglia);
+}
+
+.grafico-colonne{
+    position: relative;
+    display: grid;
+    height: 100%;
+    align-items: end;
+}
+
+.grafico-banda{
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    height: 100%;
+    cursor: crosshair;
+}
+
+.grafico-colonna{
+    width: 60%;
+    max-width: 24px;
+    min-height: 2px;
+    background-color: var(--viola);
+    border-radius: 4px 4px 0 0; /* arrotondata in cima, dritta sulla base */
+}
+
+.grafico-colonna.vuota{
+    min-height: 0;
+}
+
+.grafico-banda.attiva .grafico-colonna{
+    background-color: var(--nero);
+}
+
+.grafico-banda.attiva{
+    background-color: rgb(0 0 0 / 0.05);
+}
+
+.grafico-asse-x{
+    display: grid;
+    padding-top: 0.25rem;
+    font-size: 0.75rem;
+    color: var(--testo-secondario);
+    text-align: center;
+    white-space: nowrap;
+}
+
+.grafico-tooltip{
+    position: absolute;
+    bottom: calc(100% + 0.5rem);
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    padding: 0.35rem 0.6rem;
+    background-color: var(--bianco);
+    border: var(--bordo);
+    box-shadow: var(--ombra);
+    font-size: 0.85rem;
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.grafico-tooltip strong{
+    font-size: 1.1rem;
+}
+
+.vista-tabella summary{
+    cursor: pointer;
+    font-weight: 800;
+}
+
+.vista-tabella table{
+    width: 100%;
+    margin-top: 0.5rem;
+    border-collapse: collapse;
+    font-variant-numeric: tabular-nums;
+}
+
+.vista-tabella th,
+.vista-tabella td{
+    padding: 0.35rem 0.25rem;
+    border-bottom: 1px solid var(--griglia);
+    text-align: right;
+}
+
+.vista-tabella th:first-child,
+.vista-tabella td:first-child{
+    text-align: left;
 }
 
 /* ---------- barra di navigazione ---------- */
