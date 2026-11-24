@@ -170,33 +170,28 @@ formModifica.addEventListener("submit", (evento) => {
 
 // ---------- eliminazione cliente ----------
 
-function chiediEliminazione(id) {
+async function chiediEliminazione(id) {
     const dati = datiCliente(id);
     if (!dati) return;
     const { cliente, attivita } = dati;
     const n = attivita.length;
 
-    document.getElementById("titolo-eliminazione").textContent = `Eliminare ${cliente.nome}?`;
-    document.getElementById("testo-eliminazione").textContent =
-        (n === 0 ? "Questo cliente non ha attività registrate."
+    const confermato = await UI.conferma(dialogElimina, {
+        titolo: `Eliminare ${cliente.nome}?`,
+        testo: (n === 0 ? "Questo cliente non ha attività registrate."
             : n === 1 ? "Verrà eliminata anche la sua attività registrata."
             : `Verranno eliminate anche le sue ${n} attività registrate.`)
-        + " L'operazione non si può annullare.";
+            + " L'operazione non si può annullare.",
+    });
+    if (!confermato) return;
 
-    dialogElimina.dataset.id = id;
-    dialogElimina.returnValue = ""; // con Esc il valore resterebbe quello della volta precedente
-    dialogElimina.showModal();
-}
-
-dialogElimina.addEventListener("close", () => {
-    if (dialogElimina.returnValue !== "elimina") return;
     try {
-        Dati.eliminaCliente(dialogElimina.dataset.id);
+        Dati.eliminaCliente(id);
     } catch (errore) {
         UI.mostraErrore(null, errore);
     }
     mostraClienti();
-});
+}
 
 Dati.allaModifica(mostraClienti);
 mostraClienti();

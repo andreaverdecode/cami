@@ -306,15 +306,17 @@ const Dati = (() => {
         return prima - archivio.attivita.length;
     }
 
-    /** @param {{ clienteId: string, data: string, ore: string|number, minuti: string|number }} campi */
-    function aggiungiAttivita({ clienteId, data, ore, minuti }) {
-        const archivio = carica();
-
+    /**
+     * Controlla i campi di un'attività e restituisce { cliente, data, minuti }.
+     * `clienteGiaAssegnato` è l'id del cliente che l'attività ha già (in modifica):
+     * quello resta accettato anche se nel frattempo è stato spento.
+     */
+    function validaCampiAttivita(archivio, { clienteId, data, ore, minuti }, clienteGiaAssegnato = null) {
         const cliente = archivio.clienti.find((c) => c.id === clienteId);
         if (!cliente) {
             throw new ErroreValidazione("Scegli un cliente.", "cliente");
         }
-        if (cliente.attivo === false) {
+        if (cliente.attivo === false && cliente.id !== clienteGiaAssegnato) {
             throw new ErroreValidazione("Questo cliente è spento: riaccendilo nella pagina Clienti per registrare nuove ore.", "cliente");
         }
         if (!eDataValida(data)) {
@@ -332,18 +334,58 @@ const Dati = (() => {
         if (totaleMinuti === 0) {
             throw new ErroreValidazione("Inserisci una durata maggiore di zero.", "ore");
         }
+        return { cliente, data, minuti: totaleMinuti };
+    }
+
+    function trovaAttivita(archivio, id) {
+        const attivita = archivio.attivita.find((a) => a.id === id);
+        if (!attivita) throw new Error("Questa attività non esiste più: forse è stata eliminata in un'altra scheda.");
+        return attivita;
+    }
+
+    /** @param {{ clienteId: string, data: string, ore: string|number, minuti: string|number }} campi */
+    function aggiungiAttivita(campi) {
+        const archivio = carica();
+        const { cliente, data, minuti } = validaCampiAttivita(archivio, campi);
 
         const attivita = {
             id: nuovoId(),
-            clienteId,
+            clienteId: cliente.id,
             data,
-            minuti: totaleMinuti,
+            minuti,
             tariffaCentesimi: cliente.tariffaCentesimi,
             creatoIl: new Date().toISOString(),
         };
         archivio.attivita.push(attivita);
         scrivi(archivio);
         return attivita;
+    }
+
+    /**
+     * Modifica un'attività: cliente, data, durata e paga oraria applicata.
+     * Si può lasciare il cliente che ha già anche se è spento, ma non spostarla su un altro cliente spento.
+     * @param {{ id: string, clienteId: string, data: string, ore: string|number, minuti: string|number, tariffa: string|number }} campi
+     *        tariffa in euro
+     */
+    function modificaAttivita(campi) {
+        const archivio = carica();
+        const attivita = trovaAttivita(archivio, campi.id);
+        const { cliente, data, minuti } = validaCampiAttivita(archivio, campi, attivita.clienteId);
+        const tariffaCentesimi = validaTariffa(campi.tariffa);
+
+        attivita.clienteId = cliente.id;
+        attivita.data = data;
+        attivita.minuti = minuti;
+        attivita.tariffaCentesimi = tariffaCentesimi;
+        scrivi(archivio);
+        return attivita;
+    }
+
+    function eliminaAttivita(id) {
+        const archivio = carica();
+        trovaAttivita(archivio, id);
+        archivio.attivita = archivio.attivita.filter((a) => a.id !== id);
+        scrivi(archivio);
     }
 
     /** Importo in centesimi di un'attività. */
@@ -373,6 +415,8 @@ const Dati = (() => {
         impostaAttivo,
         eliminaCliente,
         aggiungiAttivita,
+        modificaAttivita,
+        eliminaAttivita,
         euroInCentesimi,
         importo,
         oggi,

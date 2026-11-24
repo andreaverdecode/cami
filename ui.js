@@ -63,6 +63,20 @@ const UI = (() => {
         }, { once: true });
     }
 
+    /**
+     * Apre una finestra di conferma (<dialog> con [data-campo="titolo"], [data-campo="testo"]
+     * e un bottone value="conferma"). Restituisce una Promise: true se l'utente conferma.
+     */
+    function conferma(dialog, { titolo, testo }) {
+        dialog.querySelector('[data-campo="titolo"]').textContent = titolo;
+        dialog.querySelector('[data-campo="testo"]').textContent = testo;
+        dialog.returnValue = ""; // con Esc resterebbe il valore della volta precedente
+        dialog.showModal();
+        return new Promise((risolvi) => {
+            dialog.addEventListener("close", () => risolvi(dialog.returnValue === "conferma"), { once: true });
+        });
+    }
+
     /** Esegue `funzione` mostrando un avviso in caso di errore (per esempio memoria non disponibile). */
     function protetto(funzione) {
         return (...argomenti) => {
@@ -74,5 +88,5 @@ const UI = (() => {
         };
     }
 
-    return Object.freeze({ euro, durata, data, daModello, mostraErrore, protetto });
+    return Object.freeze({ euro, durata, data, daModello, mostraErrore, conferma, protetto });
 })();

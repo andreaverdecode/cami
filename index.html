@@ -32,6 +32,7 @@
             <ul class="lista-card" id="lista-attivita"></ul>
         </main>
 
+        <!-- Nuove ore -->
         <form id="new-activity" popover>
             <h2>Nuove ore</h2>
             <label>
@@ -56,6 +57,52 @@
             <button type="submit">Crea</button>
         </form>
 
+        <!-- Modifica attività -->
+        <form id="modifica-attivita" popover>
+            <h2>Modifica attività</h2>
+            <input type="hidden" name="attivitaId">
+            <label>
+                Cliente
+                <select name="cliente" required></select>
+            </label>
+            <label>
+                Data
+                <input type="date" name="data" required>
+            </label>
+            <fieldset>
+                <legend>Durata</legend>
+                <label>
+                    Ore
+                    <input type="number" name="ore" min="0" max="23" step="1" inputmode="numeric" placeholder="0">
+                </label>
+                <label>
+                    Minuti
+                    <input type="number" name="minuti" min="0" max="59" step="1" inputmode="numeric" placeholder="0">
+                </label>
+            </fieldset>
+            <label>
+                Paga oraria (€/h)
+                <input type="number" name="tariffa" required min="0" step="0.01" inputmode="decimal">
+                <small>Vale solo per questa attività. Se cambi cliente diventa la paga attuale del nuovo cliente.</small>
+            </label>
+            <div class="azioni">
+                <button type="button" popovertarget="modifica-attivita" popovertargetaction="hide">Annulla</button>
+                <button type="submit">Salva</button>
+            </div>
+        </form>
+
+        <!-- Conferma eliminazione -->
+        <dialog id="conferma-eliminazione" aria-labelledby="titolo-eliminazione">
+            <form method="dialog">
+                <h2 id="titolo-eliminazione" data-campo="titolo"></h2>
+                <p data-campo="testo"></p>
+                <div class="azioni">
+                    <button value="annulla" autofocus>Annulla</button>
+                    <button value="conferma" class="pericolo">Elimina</button>
+                </div>
+            </form>
+        </dialog>
+
         <template id="modello-attivita">
             <li class="card">
                 <div class="card-intestazione">
@@ -64,8 +111,13 @@
                 <dl class="card-dettagli">
                     <div><dt>Data</dt><dd><time data-campo="data"></time></dd></div>
                     <div><dt>Durata</dt><dd data-campo="durata"></dd></div>
+                    <div><dt>Paga oraria</dt><dd data-campo="tariffa"></dd></div>
                     <div><dt>Importo</dt><dd data-campo="importo"></dd></div>
                 </dl>
+                <div class="azioni">
+                    <button type="button" data-azione="modifica"><i class="fa-solid fa-pen" aria-hidden="true"></i> Modifica</button>
+                    <button type="button" class="pericolo" data-azione="elimina"><i class="fa-solid fa-trash" aria-hidden="true"></i> Elimina</button>
+                </div>
             </li>
         </template>
 

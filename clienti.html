@@ -79,12 +79,12 @@
         <!-- Conferma eliminazione -->
         <dialog id="conferma-eliminazione" aria-labelledby="titolo-eliminazione">
             <form method="dialog">
-                <h2 id="titolo-eliminazione"></h2>
-                <p id="testo-eliminazione"></p>
+                <h2 id="titolo-eliminazione" data-campo="titolo"></h2>
+                <p data-campo="testo"></p>
                 <p><small>Se vuoi solo che non compaia più tra i clienti da scegliere, spegnilo invece di eliminarlo: le sue attività resteranno.</small></p>
                 <div class="azioni">
                     <button value="annulla" autofocus>Annulla</button>
-                    <button value="elimina" class="pericolo">Elimina</button>
+                    <button value="conferma" class="pericolo">Elimina</button>
                 </div>
             </form>
         </dialog>
