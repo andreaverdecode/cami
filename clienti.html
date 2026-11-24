@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+        <title>Planner</title>
+        <link rel="stylesheet" href="clienti.css">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Sniglet:wght@400;800&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    </head>
+    <body>
+        <button popovertarget="new-client">Aggiungi cliente</button>
+
+        <form id="new-client" popover>
+            <label>
+                Nome
+                <input type="text" id="cliente">
+            </label>    
+            <label>
+                Paga oraria (€/h)
+                <input type="number" id="paga">
+            </label>
+            <button type="submit">Crea</button>
+        </form>
+
+
+        <div class="bottom-bar">
+            <a href="clienti.html" class="active"><i class="fa-solid fa-user"></i></a>
+            <a href="index.html"><i class="fa-solid fa-briefcase"></i></a>
+            <a href="#dashboard"><i class="fa-solid fa-money-bill-wave"></i></a>
+        </div>
+
+        <ul id="lista"></ul>
+
+        <script src="clienti.js"></script>
+    </body>
+</html>

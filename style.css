@@ -1,0 +1,80 @@
+body{
+    background-color: #fffab9;
+}
+
+button{
+    font-size: 1rem;
+    font-family: "Sniglet", system-ui;
+    font-weight: 400;
+    font-style: normal;
+    width: 100%;
+    padding: 1%;
+    background-color: #f29ff5;
+    border: solid #000000; 
+    box-shadow: 0px 2px;
+    color: #000000;
+}
+
+form{
+    font-size: 1rem;
+    font-family: "Sniglet", system-ui;
+    font-weight: 400;
+    font-style: normal;
+    padding: 5%;
+    border: solid #000000; 
+    box-shadow: 0px 2px;
+    background-color: #65fa8a;
+}
+
+form:popover-open{
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+label{
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+input,select{
+    font-size: 1rem;
+    font-family: "Sniglet", system-ui;
+    font-weight: 400;
+    font-style: normal;
+    border: solid #000000;
+}
+
+.bottom-bar{
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: #65fa8a;
+    display: flex;
+    padding-bottom: env(safe-area-inset-bottom);
+    border-top: solid #000000;
+}
+
+.bottom-bar a{
+    flex: 1;
+    text-align: center;
+    padding: 1rem;
+    color: #FFFFFF;
+}
+
+.bottom-bar a.active{
+    color: #f29ff5;
+}
+
+fieldset{
+    border: solid #000000;
+    display: flex;
+    flex: 1;
+    gap: 1rem;
+}
+
+fieldset label{
+    flex: 1;
+}

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+        <title>Planner</title>
+        <link rel="stylesheet" href="style.css">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Sniglet:wght@400;800&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    </head>
+    <body>
+        <button popovertarget="new-activity">Aggiungi ore</button>
+
+        <form id="new-activity" popover>
+            <label>
+                Cliente
+                <select name="cliente">
+                    <option>cliente 1</option>
+                </select>
+            </label>    
+            <label>
+                Data
+                <input type="date">
+            </label>
+            <fieldset>
+                <legend>Durata</legend>
+                <label>
+                    Ore
+                    <input type="number" min="0" max="23">
+                </label>
+                <label>
+                    Minuti
+                    <input type="number" min="0" max="59">
+                </label>
+            </fieldset>
+            <button type="submit">Crea</button>
+        </form>
+
+
+        <div class="bottom-bar">
+            <a href="clienti.html"><i class="fa-solid fa-user"></i></a>
+            <a href="#index" class="active"><i class="fa-solid fa-briefcase"></i></a>
+            <a href="#dashboard"><i class="fa-solid fa-money-bill-wave"></i></a>
+        </div>
+    </body>
+</html>
