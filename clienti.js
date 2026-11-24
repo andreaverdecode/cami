@@ -1,46 +1,51 @@
-const form = document.getElementById('new-client');
-const inputCliente = document.getElementById('cliente');
-const inputPaga = document.getElementById('paga');
-const lista = document.getElementById('lista');
-const CHIAVE = "clienti";
+"use strict";
 
-function leggiClienti(){
-    try{
-        return JSON.parse(localStorage.getItem(CHIAVE)) ?? [];
-    } catch{
-        return [];
+const formCliente = document.getElementById("new-client");
+const listaClienti = document.getElementById("lista-clienti");
+const nessunCliente = document.getElementById("nessun-cliente");
+const modelloCliente = document.getElementById("modello-cliente");
+
+const mostraClienti = UI.protetto(() => {
+    const { clienti, attivita } = Dati.leggi();
+
+    // Somma minuti e importi delle attività di ogni cliente.
+    const totali = new Map();
+    for (const a of attivita) {
+        const totale = totali.get(a.clienteId) ?? { minuti: 0, centesimi: 0 };
+        totale.minuti += a.minuti;
+        totale.centesimi += Dati.importo(a);
+        totali.set(a.clienteId, totale);
     }
-}
 
-function salvaClienti(clienti){
-    localStorage.setItem(CHIAVE, JSON.stringify(clienti));
-}
-
-function mostraClienti(){
-    const clienti = leggiClienti();
-    lista.innerHTML = "";
-
-    clienti.forEach((el) => {
-        const li = document.createElement("li");
-        li.textContent = `${el.cliente}: ${el.paga}`;
-        lista.appendChild(li);
+    const card = clienti.map((cliente) => {
+        const totale = totali.get(cliente.id) ?? { minuti: 0, centesimi: 0 };
+        return UI.daModello(modelloCliente, {
+            nome: cliente.nome,
+            tariffa: `${UI.euro(cliente.tariffaCentesimi)}/h`,
+            ore: UI.durata(totale.minuti),
+            totale: UI.euro(totale.centesimi),
+        });
     });
-}
 
-form.addEventListener("submit", function(event){
-    event.preventDefault();
+    listaClienti.replaceChildren(...card);
+    nessunCliente.hidden = clienti.length > 0;
+});
 
-    const nuovoCliente = {
-        cliente: inputCliente.value,
-        paga: inputPaga.value
-    };
-
-    const clienti = leggiClienti();
-    clienti.push(nuovoCliente);
-    salvaClienti(clienti);
-
-    form.reset();
+formCliente.addEventListener("submit", (evento) => {
+    evento.preventDefault();
+    try {
+        Dati.aggiungiCliente({
+            nome: formCliente.elements.nome.value,
+            tariffa: formCliente.elements.tariffa.value,
+        });
+    } catch (errore) {
+        UI.mostraErrore(formCliente, errore);
+        return;
+    }
+    formCliente.reset();
+    formCliente.hidePopover();
     mostraClienti();
 });
 
+Dati.allaModifica(mostraClienti);
 mostraClienti();

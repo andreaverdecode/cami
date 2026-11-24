@@ -1,39 +1,58 @@
 <!DOCTYPE html>
-<html>
+<html lang="it">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-        <title>Planner</title>
-        <link rel="stylesheet" href="clienti.css">
+        <title>Clienti · Planner</title>
+        <link rel="stylesheet" href="style.css">
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Sniglet:wght@400;800&display=swap" rel="stylesheet">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+        <script src="dati.js" defer></script>
+        <script src="ui.js" defer></script>
+        <script src="clienti.js" defer></script>
     </head>
     <body>
-        <button popovertarget="new-client">Aggiungi cliente</button>
+        <main>
+            <h1>Clienti</h1>
+
+            <button type="button" popovertarget="new-client">Aggiungi cliente</button>
+
+            <p class="messaggio" id="nessun-cliente" hidden>
+                Non hai ancora nessun cliente. Aggiungine uno per iniziare a registrare le ore.
+            </p>
+
+            <ul class="lista-card" id="lista-clienti"></ul>
+        </main>
 
         <form id="new-client" popover>
             <label>
                 Nome
-                <input type="text" id="cliente">
-            </label>    
+                <input type="text" name="nome" required maxlength="60" autocomplete="off">
+            </label>
             <label>
                 Paga oraria (€/h)
-                <input type="number" id="paga">
+                <input type="number" name="tariffa" required min="0" step="0.01" inputmode="decimal">
             </label>
             <button type="submit">Crea</button>
         </form>
 
+        <template id="modello-cliente">
+            <li class="card">
+                <h2 class="card-titolo" data-campo="nome"></h2>
+                <dl class="card-dettagli">
+                    <div><dt>Paga oraria</dt><dd data-campo="tariffa"></dd></div>
+                    <div><dt>Ore registrate</dt><dd data-campo="ore"></dd></div>
+                    <div><dt>Totale</dt><dd data-campo="totale"></dd></div>
+                </dl>
+            </li>
+        </template>
 
-        <div class="bottom-bar">
-            <a href="clienti.html" class="active"><i class="fa-solid fa-user"></i></a>
-            <a href="index.html"><i class="fa-solid fa-briefcase"></i></a>
-            <a href="#dashboard"><i class="fa-solid fa-money-bill-wave"></i></a>
-        </div>
-
-        <ul id="lista"></ul>
-
-        <script src="clienti.js"></script>
+        <nav class="bottom-bar" aria-label="Navigazione principale">
+            <a href="clienti.html" class="active" aria-current="page" aria-label="Clienti"><i class="fa-solid fa-user" aria-hidden="true"></i></a>
+            <a href="index.html" aria-label="Ore lavorate"><i class="fa-solid fa-briefcase" aria-hidden="true"></i></a>
+            <a href="#dashboard" aria-label="Guadagni"><i class="fa-solid fa-money-bill-wave" aria-hidden="true"></i></a>
+        </nav>
     </body>
 </html>

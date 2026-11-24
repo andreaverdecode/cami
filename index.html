@@ -1,48 +1,71 @@
 <!DOCTYPE html>
-<html>
+<html lang="it">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-        <title>Planner</title>
+        <title>Ore · Planner</title>
         <link rel="stylesheet" href="style.css">
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Sniglet:wght@400;800&display=swap" rel="stylesheet">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+        <script src="dati.js" defer></script>
+        <script src="ui.js" defer></script>
+        <script src="index.js" defer></script>
     </head>
     <body>
-        <button popovertarget="new-activity">Aggiungi ore</button>
+        <main>
+            <h1>Ore lavorate</h1>
+
+            <button type="button" id="aggiungi-ore" popovertarget="new-activity">Aggiungi ore</button>
+
+            <p class="messaggio" id="serve-cliente" hidden>
+                Per registrare le ore aggiungi prima un cliente nella pagina
+                <a href="clienti.html">Clienti</a>.
+            </p>
+            <p class="messaggio" id="nessuna-attivita" hidden>Non hai ancora registrato nessuna ora.</p>
+
+            <ul class="lista-card" id="lista-attivita"></ul>
+        </main>
 
         <form id="new-activity" popover>
             <label>
                 Cliente
-                <select name="cliente">
-                    <option>cliente 1</option>
-                </select>
-            </label>    
+                <select name="cliente" required></select>
+            </label>
             <label>
                 Data
-                <input type="date">
+                <input type="date" name="data" required>
             </label>
             <fieldset>
                 <legend>Durata</legend>
                 <label>
                     Ore
-                    <input type="number" min="0" max="23">
+                    <input type="number" name="ore" min="0" max="23" step="1" inputmode="numeric" placeholder="0">
                 </label>
                 <label>
                     Minuti
-                    <input type="number" min="0" max="59">
+                    <input type="number" name="minuti" min="0" max="59" step="1" inputmode="numeric" placeholder="0">
                 </label>
             </fieldset>
             <button type="submit">Crea</button>
         </form>
 
+        <template id="modello-attivita">
+            <li class="card">
+                <h2 class="card-titolo" data-campo="cliente"></h2>
+                <dl class="card-dettagli">
+                    <div><dt>Data</dt><dd><time data-campo="data"></time></dd></div>
+                    <div><dt>Durata</dt><dd data-campo="durata"></dd></div>
+                    <div><dt>Importo</dt><dd data-campo="importo"></dd></div>
+                </dl>
+            </li>
+        </template>
 
-        <div class="bottom-bar">
-            <a href="clienti.html"><i class="fa-solid fa-user"></i></a>
-            <a href="#index" class="active"><i class="fa-solid fa-briefcase"></i></a>
-            <a href="#dashboard"><i class="fa-solid fa-money-bill-wave"></i></a>
-        </div>
+        <nav class="bottom-bar" aria-label="Navigazione principale">
+            <a href="clienti.html" aria-label="Clienti"><i class="fa-solid fa-user" aria-hidden="true"></i></a>
+            <a href="index.html" class="active" aria-current="page" aria-label="Ore lavorate"><i class="fa-solid fa-briefcase" aria-hidden="true"></i></a>
+            <a href="#dashboard" aria-label="Guadagni"><i class="fa-solid fa-money-bill-wave" aria-hidden="true"></i></a>
+        </nav>
     </body>
 </html>
