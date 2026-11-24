@@ -98,7 +98,43 @@ const UI = (() => {
     // Funziona solo quando l'app è pubblicata su https (o in localhost), non aprendo i file dal disco.
     if ("serviceWorker" in navigator && location.protocol !== "file:") {
         window.addEventListener("load", () => {
-            navigator.serviceWorker.register("sw.js").catch((errore) => console.warn("Service worker non registrato:", errore));
+            // updateViaCache "none": sw.js si controlla sempre sul server, mai dalla memoria del browser.
+            navigator.serviceWorker.register("sw.js", { updateViaCache: "none" })
+                .then((registrazione) => {
+                    // Su telefono l'app installata spesso non si riapre da zero ma "riprende":
+                    // quando torna in primo piano controlliamo se c'è una versione nuova.
+                    document.addEventListener("visibilitychange", () => {
+                        if (document.visibilityState !== "visible") return;
+                        ripresaAlle = Date.now();
+                        registrazione.update().catch(() => {});
+                    });
+                })
+                .catch((errore) => console.warn("Service worker non registrato:", errore));
+        });
+
+        // Una versione nuova ha preso il controllo mentre l'app era stata ripresa dal background
+        // (la pagina in memoria è quella vecchia): ricarichiamo per mostrarla subito.
+        // Se invece l'app è appena stata aperta, la pagina arriva già aggiornata dalla rete
+        // e ricaricarla sarebbe solo un fastidio. Con un form o una conferma aperti aspettiamo
+        // che l'utente esca dall'app, così non perde quello che sta scrivendo.
+        const aggiornamento = navigator.serviceWorker.controller !== null;
+        let ripresaAlle = 0;
+        let ricaricaInSospeso = false;
+        const ricarica = () => {
+            ricaricaInSospeso = false;
+            location.reload();
+        };
+        navigator.serviceWorker.addEventListener("controllerchange", () => {
+            const dopoRipresa = Date.now() - ripresaAlle < 60_000;
+            if (!aggiornamento || !dopoRipresa || ricaricaInSospeso) return;
+            if (document.querySelector(":popover-open, dialog[open]")) {
+                ricaricaInSospeso = true;
+            } else {
+                ricarica();
+            }
+        });
+        document.addEventListener("visibilitychange", () => {
+            if (ricaricaInSospeso && document.visibilityState === "hidden") ricarica();
         });
     }
 
