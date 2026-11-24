@@ -23,12 +23,17 @@
                 Per registrare le ore aggiungi prima un cliente nella pagina
                 <a href="clienti.html">Clienti</a>.
             </p>
+            <p class="messaggio" id="nessun-cliente-attivo" hidden>
+                Tutti i tuoi clienti sono spenti. Per registrare nuove ore riaccendine uno nella pagina
+                <a href="clienti.html">Clienti</a>.
+            </p>
             <p class="messaggio" id="nessuna-attivita" hidden>Non hai ancora registrato nessuna ora.</p>
 
             <ul class="lista-card" id="lista-attivita"></ul>
         </main>
 
         <form id="new-activity" popover>
+            <h2>Nuove ore</h2>
             <label>
                 Cliente
                 <select name="cliente" required></select>
@@ -53,7 +58,9 @@
 
         <template id="modello-attivita">
             <li class="card">
-                <h2 class="card-titolo" data-campo="cliente"></h2>
+                <div class="card-intestazione">
+                    <h2 class="card-titolo" data-campo="cliente"></h2>
+                </div>
                 <dl class="card-dettagli">
                     <div><dt>Data</dt><dd><time data-campo="data"></time></dd></div>
                     <div><dt>Durata</dt><dd data-campo="durata"></dd></div>

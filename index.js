@@ -5,11 +5,12 @@ const selectCliente = formAttivita.elements.cliente;
 const inputData = formAttivita.elements.data;
 const bottoneAggiungi = document.getElementById("aggiungi-ore");
 const serveCliente = document.getElementById("serve-cliente");
+const nessunClienteAttivo = document.getElementById("nessun-cliente-attivo");
 const listaAttivita = document.getElementById("lista-attivita");
 const nessunaAttivita = document.getElementById("nessuna-attivita");
 const modelloAttivita = document.getElementById("modello-attivita");
 
-/** Riempie la select con i clienti salvati, mantenendo la scelta corrente se possibile. */
+/** Riempie la select con i clienti attivi, mantenendo la scelta corrente se possibile. */
 function popolaSelect(clienti) {
     const scelto = selectCliente.value;
     const segnaposto = new Option("Scegli un cliente", "");
@@ -37,13 +38,16 @@ function mostraAttivita(clienti, attivita) {
 
 const aggiorna = UI.protetto(() => {
     const { clienti, attivita } = Dati.leggi();
-    popolaSelect(clienti);
+    const attivi = clienti.filter((c) => c.attivo !== false);
+    popolaSelect(attivi);
+    // Le attività dei clienti spenti restano visibili: per i nomi usiamo tutti i clienti.
     mostraAttivita(clienti, attivita);
 
-    // Senza clienti non si possono registrare ore: rimandiamo alla pagina Clienti.
-    bottoneAggiungi.disabled = clienti.length === 0;
+    // Senza clienti attivi non si possono registrare ore: rimandiamo alla pagina Clienti.
+    bottoneAggiungi.disabled = attivi.length === 0;
     serveCliente.hidden = clienti.length > 0;
-    if (clienti.length === 0 && formAttivita.matches(":popover-open")) formAttivita.hidePopover();
+    nessunClienteAttivo.hidden = clienti.length === 0 || attivi.length > 0;
+    if (attivi.length === 0 && formAttivita.matches(":popover-open")) formAttivita.hidePopover();
 });
 
 // All'apertura del form proponiamo la data di oggi.

@@ -48,7 +48,8 @@ const UI = (() => {
      * appare come fumetto sul campo; altrimenti come avviso.
      */
     function mostraErrore(form, errore) {
-        const campo = errore instanceof Dati.ErroreValidazione ? form?.elements[errore.campo] : null;
+        let campo = errore instanceof Dati.ErroreValidazione ? form?.elements[errore.campo] : null;
+        if (campo instanceof RadioNodeList) campo = campo[0]; // gruppo di radio: segnaliamo sul primo
         if (!campo) {
             console.error(errore);
             alert(errore.message);

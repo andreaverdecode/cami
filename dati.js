@@ -4,8 +4,8 @@
  * Tutti i dati stanno in UNA sola chiave di localStorage ("planner"):
  *
  *   {
- *     versione: 1,
- *     clienti:  [{ id, nome, tariffaCentesimi, creatoIl }],
+ *     versione: 2,
+ *     clienti:  [{ id, nome, tariffaCentesimi, attivo, creatoIl }],
  *     attivita: [{ id, clienteId, data, minuti, tariffaCentesimi, creatoIl }]
  *   }
  *
@@ -16,7 +16,9 @@
  * - le date sono stringhe "AAAA-MM-GG" del giorno locale (niente fusi orari);
  * - ogni attività copia la tariffa del cliente al momento della registrazione,
  *   così se in futuro cambi la tariffa i conteggi passati restano corretti;
- * - i clienti hanno un id univoco: le attività si collegano all'id, non al nome.
+ * - i clienti hanno un id univoco: le attività si collegano all'id, non al nome;
+ * - un cliente non attivo ("spento") non si può scegliere per nuove attività,
+ *   ma le sue attività passate restano.
  *
  * Ogni modifica rilegge l'archivio dal disco subito prima di scrivere, così
  * due schede aperte contemporaneamente non si sovrascrivono a vicenda.
@@ -26,7 +28,19 @@ const Dati = (() => {
 
     const CHIAVE = "planner";
     const CHIAVE_VECCHIA = "clienti"; // formato del primo commit: [{ cliente, paga }]
-    const VERSIONE = 1;
+    const VERSIONE = 2;
+
+    /*
+     * Migrazioni del formato: MIGRAZIONI[n] porta l'archivio dalla versione n
+     * alla n + 1. Quando cambi il formato aumenta VERSIONE e aggiungi qui il
+     * passaggio, così i dati già salvati vengono aggiornati invece che persi.
+     */
+    const MIGRAZIONI = {
+        // 1 -> 2: i clienti possono essere spenti
+        1(archivio) {
+            for (const cliente of archivio.clienti) cliente.attivo ??= true;
+        },
+    };
 
     class ErroreValidazione extends Error {
         /** @param {string} campo  il name del campo del form a cui si riferisce l'errore */
@@ -74,7 +88,7 @@ const Dati = (() => {
 
         try {
             const archivio = JSON.parse(grezzo);
-            if (eValido(archivio)) return archivio;
+            if (eValido(archivio)) return migra(archivio);
         } catch {
             // gestito qui sotto
         }
@@ -86,6 +100,16 @@ const Dati = (() => {
         const archivio = archivioVuoto();
         scrivi(archivio);
         alert(`I dati salvati erano danneggiati e non è stato possibile leggerli. Una copia è stata conservata nel browser con la chiave "${chiaveBackup}".`);
+        return archivio;
+    }
+
+    function migra(archivio) {
+        if (archivio.versione >= VERSIONE) return archivio;
+        while (archivio.versione < VERSIONE) {
+            MIGRAZIONI[archivio.versione](archivio);
+            archivio.versione++;
+        }
+        scrivi(archivio);
         return archivio;
     }
 
@@ -176,7 +200,27 @@ const Dati = (() => {
     }
 
     function nuovoCliente(nome, tariffaCentesimi) {
-        return { id: nuovoId(), nome, tariffaCentesimi, creatoIl: new Date().toISOString() };
+        return { id: nuovoId(), nome, tariffaCentesimi, attivo: true, creatoIl: new Date().toISOString() };
+    }
+
+    function trovaCliente(archivio, id) {
+        const cliente = archivio.clienti.find((c) => c.id === id);
+        if (!cliente) throw new Error("Questo cliente non esiste più: forse è stato eliminato in un'altra scheda.");
+        return cliente;
+    }
+
+    function validaNome(nome) {
+        const nomePulito = normalizzaNome(nome);
+        if (!nomePulito) throw new ErroreValidazione("Inserisci il nome del cliente.", "nome");
+        return nomePulito;
+    }
+
+    function validaTariffa(tariffa) {
+        const tariffaCentesimi = euroInCentesimi(tariffa);
+        if (tariffaCentesimi === null) {
+            throw new ErroreValidazione("Inserisci una paga oraria valida, per esempio 25 o 25,50.", "tariffa");
+        }
+        return tariffaCentesimi;
     }
 
     // ---------- API pubblica ----------
@@ -191,14 +235,8 @@ const Dati = (() => {
 
     /** @param {{ nome: string, tariffa: string|number }} campi  tariffa in euro */
     function aggiungiCliente({ nome, tariffa }) {
-        const nomePulito = normalizzaNome(nome);
-        if (!nomePulito) {
-            throw new ErroreValidazione("Inserisci il nome del cliente.", "nome");
-        }
-        const tariffaCentesimi = euroInCentesimi(tariffa);
-        if (tariffaCentesimi === null) {
-            throw new ErroreValidazione("Inserisci una paga oraria valida, per esempio 25 o 25,50.", "tariffa");
-        }
+        const nomePulito = validaNome(nome);
+        const tariffaCentesimi = validaTariffa(tariffa);
 
         const archivio = carica();
         if (trovaPerNome(archivio, nomePulito)) {
@@ -211,6 +249,63 @@ const Dati = (() => {
         return cliente;
     }
 
+    /**
+     * Modifica nome e paga oraria di un cliente.
+     * Se la paga cambia e il cliente ha attività salvate, `applica` dice a quali applicarla:
+     * - "tutte":   a tutte le attività del cliente;
+     * - "da-oggi": solo a quelle con data da oggi in poi (le precedenti restano com'erano).
+     * In ogni caso le attività registrate da qui in avanti useranno la nuova paga.
+     * @param {{ id: string, nome: string, tariffa: string|number, applica?: "tutte"|"da-oggi" }} campi
+     */
+    function modificaCliente({ id, nome, tariffa, applica }) {
+        const nomePulito = validaNome(nome);
+        const tariffaCentesimi = validaTariffa(tariffa);
+
+        const archivio = carica();
+        const cliente = trovaCliente(archivio, id);
+        const omonimo = trovaPerNome(archivio, nomePulito);
+        if (omonimo && omonimo.id !== id) {
+            throw new ErroreValidazione(`Esiste già un cliente di nome "${nomePulito}".`, "nome");
+        }
+
+        const sueAttivita = archivio.attivita.filter((a) => a.clienteId === id);
+        if (tariffaCentesimi !== cliente.tariffaCentesimi && sueAttivita.length > 0) {
+            let daAggiornare;
+            if (applica === "tutte") {
+                daAggiornare = sueAttivita;
+            } else if (applica === "da-oggi") {
+                const dataOggi = oggi();
+                daAggiornare = sueAttivita.filter((a) => a.data >= dataOggi);
+            } else {
+                throw new ErroreValidazione("Scegli a quali attività applicare la nuova paga.", "applica");
+            }
+            for (const a of daAggiornare) a.tariffaCentesimi = tariffaCentesimi;
+        }
+
+        cliente.nome = nomePulito;
+        cliente.tariffaCentesimi = tariffaCentesimi;
+        scrivi(archivio);
+        return cliente;
+    }
+
+    /** Accende o spegne un cliente. Un cliente spento non compare tra quelli selezionabili per nuove attività. */
+    function impostaAttivo(id, attivo) {
+        const archivio = carica();
+        trovaCliente(archivio, id).attivo = Boolean(attivo);
+        scrivi(archivio);
+    }
+
+    /** Elimina un cliente e tutte le sue attività. Restituisce quante attività sono state eliminate. */
+    function eliminaCliente(id) {
+        const archivio = carica();
+        trovaCliente(archivio, id);
+        const prima = archivio.attivita.length;
+        archivio.clienti = archivio.clienti.filter((c) => c.id !== id);
+        archivio.attivita = archivio.attivita.filter((a) => a.clienteId !== id);
+        scrivi(archivio); // una sola scrittura: cliente e attività spariscono insieme
+        return prima - archivio.attivita.length;
+    }
+
     /** @param {{ clienteId: string, data: string, ore: string|number, minuti: string|number }} campi */
     function aggiungiAttivita({ clienteId, data, ore, minuti }) {
         const archivio = carica();
@@ -218,6 +313,9 @@ const Dati = (() => {
         const cliente = archivio.clienti.find((c) => c.id === clienteId);
         if (!cliente) {
             throw new ErroreValidazione("Scegli un cliente.", "cliente");
+        }
+        if (cliente.attivo === false) {
+            throw new ErroreValidazione("Questo cliente è spento: riaccendilo nella pagina Clienti per registrare nuove ore.", "cliente");
         }
         if (!eDataValida(data)) {
             throw new ErroreValidazione("Inserisci una data valida.", "data");
@@ -271,7 +369,11 @@ const Dati = (() => {
         ErroreValidazione,
         leggi,
         aggiungiCliente,
+        modificaCliente,
+        impostaAttivo,
+        eliminaCliente,
         aggiungiAttivita,
+        euroInCentesimi,
         importo,
         oggi,
         allaModifica,
