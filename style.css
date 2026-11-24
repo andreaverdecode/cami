@@ -1,35 +1,197 @@
+/* Foglio di stile unico, condiviso da tutte le pagine. */
+
+:root{
+    --giallo: #fffab9;
+    --rosa: #f29ff5;
+    --verde: #65fa8a;
+    --rosso: #ff8a80;
+    --viola: #b52fbd;        /* barre dei grafici: rosa scuro, contrasto >= 3:1 su bianco */
+    --griglia: #e6e6e6;      /* linee della griglia, appena staccate dal bianco */
+    --testo-secondario: #4a4a4a;
+    --grigio: #e4e4e4;
+    --nero: #000000;
+    --bianco: #ffffff;
+    --bordo: 3px solid var(--nero);
+    --ombra: 0px 2px var(--nero);
+    --altezza-barra: 3.5rem;
+}
+
+*,
+*::before,
+*::after{
+    box-sizing: border-box;
+}
+
+/* ---------- comportamento da app su smartphone (nessun effetto sull'aspetto) ---------- */
+
+html{
+    /* iPhone in orizzontale: non ingrandire il testo da solo */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    /* niente riquadro grigio/blu al tocco: c'è già l'effetto "premuto" dei bottoni */
+    -webkit-tap-highlight-color: transparent;
+    /* niente zoom con il doppio tocco sui comandi (lo zoom con due dita resta) */
+    touch-action: manipulation;
+}
+
+/* Con un form o una conferma aperti lo sfondo non scorre. */
+html:has([popover]:popover-open),
+html:has(dialog[open]){
+    overflow: hidden;
+}
+
+/* Comandi: niente selezione del testo o anteprima dei link con la pressione prolungata. */
+button,
+summary,
+.bottom-bar,
+.segmenti,
+.interruttore{
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+}
+
+/* Safari su iPhone arrotonda da solo campi e bottoni: il design è squadrato. */
+button,
+input:not([type="checkbox"], [type="radio"]),
+select{
+    border-radius: 0;
+}
+
+/* Elementi che ricevono il focus solo da codice (es. form appena aperto): nessun contorno al tocco. */
+[tabindex="-1"]:focus:not(:focus-visible){
+    outline: none;
+}
+
+/* l'attributo hidden deve vincere anche su display: flex/grid */
+[hidden]{
+    display: none !important;
+}
+
 body{
-    background-color: #fffab9;
+    margin: 0;
+    padding: 1rem;
+    /* in orizzontale su iPhone: lontano dalla tacca (notch) e dagli angoli arrotondati */
+    padding-top: max(1rem, env(safe-area-inset-top));
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+    /* spazio per non finire nascosti sotto la barra in basso */
+    padding-bottom: calc(var(--altezza-barra) + env(safe-area-inset-bottom) + 1rem);
+    background-color: var(--giallo);
+    font-family: "Sniglet", system-ui;
+    font-size: 1rem;
+    font-weight: 400;
+    color: var(--nero);
+}
+
+h1{
+    margin: 0 0 1rem;
+    font-weight: 800;
+    font-size: 1.75rem;
+}
+
+h2{
+    margin: 0;
+    font-weight: 800;
+    font-size: 1.25rem;
+}
+
+p{
+    margin: 0;
+}
+
+small{
+    display: block;
+    font-size: 0.85rem;
+}
+
+button,
+input,
+select{
+    font: inherit;
+    color: inherit;
 }
 
 button{
-    font-size: 1rem;
-    font-family: "Sniglet", system-ui;
-    font-weight: 400;
-    font-style: normal;
+    position: relative;
     width: 100%;
-    padding: 1%;
-    background-color: #f29ff5;
-    border: solid #000000; 
-    box-shadow: 0px 2px;
-    color: #000000;
+    padding: 0.5rem;
+    background-color: var(--rosa);
+    border: var(--bordo);
+    box-shadow: var(--ombra);
+    cursor: pointer;
 }
+
+/* Area da toccare più grande del bottone (almeno 44 px, come chiedono Apple e Google),
+   senza cambiarne l'aspetto. Si misura dall'interno del bordo: 8px = 3px di bordo + 5px.
+   In orizzontale resta sotto metà dello spazio tra due bottoni affiancati. */
+button::after{
+    content: "";
+    position: absolute;
+    inset: -8px -6px;
+}
+
+button:active{
+    transform: translateY(2px);
+    box-shadow: none;
+}
+
+button.pericolo{
+    background-color: var(--rosso);
+}
+
+button:disabled{
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: var(--ombra);
+}
+
+/* ---------- form (popover) e finestre di conferma ---------- */
 
 form{
-    font-size: 1rem;
-    font-family: "Sniglet", system-ui;
-    font-weight: 400;
-    font-style: normal;
-    padding: 5%;
-    border: solid #000000; 
-    box-shadow: 0px 2px;
-    background-color: #65fa8a;
+    width: min(90vw, 24rem);
+    padding: 1.5rem;
+    border: var(--bordo);
+    box-shadow: var(--ombra);
+    background-color: var(--verde);
 }
 
-form:popover-open{
+/* Se il form è più alto dello schermo (telefono in orizzontale) si scorre al suo interno. */
+form[popover]{
+    max-height: calc(100vh - 2rem);
+    max-height: calc(100dvh - 2rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+dialog{
+    overscroll-behavior: contain;
+}
+
+form:popover-open,
+dialog form{
     display: flex;
     flex-direction: column;
     gap: 1rem;
+}
+
+form::backdrop,
+dialog::backdrop{
+    background-color: rgb(0 0 0 / 0.3);
+}
+
+dialog{
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+}
+
+/* riga di bottoni affiancati (Annulla / Salva, Modifica / Elimina) */
+.azioni{
+    display: flex;
+    gap: 0.75rem;
 }
 
 label{
@@ -38,43 +200,531 @@ label{
     gap: 0.25rem;
 }
 
-input,select{
-    font-size: 1rem;
-    font-family: "Sniglet", system-ui;
-    font-weight: 400;
-    font-style: normal;
-    border: solid #000000;
+input:not([type="checkbox"], [type="radio"]),
+select{
+    width: 100%;
+    padding: 0.25rem 0.5rem;
+    border: var(--bordo);
+    background-color: var(--bianco);
 }
+
+fieldset{
+    display: flex;
+    gap: 1rem;
+    margin: 0;
+    border: var(--bordo);
+}
+
+fieldset label{
+    flex: 1;
+    min-width: 0;
+}
+
+/* gruppo di opzioni una sotto l'altra (radio) */
+fieldset.scelta{
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+label.opzione{
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 0.5rem;
+    cursor: pointer;
+}
+
+input[type="radio"]{
+    width: 1.25rem;
+    height: 1.25rem;
+    margin: 0.1rem 0 0;
+    flex-shrink: 0;
+    accent-color: var(--nero);
+}
+
+/* ---------- messaggi ---------- */
+
+.messaggio{
+    margin: 1rem 0;
+}
+
+.messaggio a{
+    color: inherit;
+    font-weight: 800;
+}
+
+/* ---------- riquadri (card) ---------- */
+
+.lista-card{
+    list-style: none;
+    margin: 1rem 0 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+    gap: 1rem;
+}
+
+.card{
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem;
+    background-color: var(--bianco);
+    border: var(--bordo);
+    box-shadow: var(--ombra);
+}
+
+.card-intestazione{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: var(--bordo);
+}
+
+.card-titolo{
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+/* cliente spento: riquadro grigio, i comandi restano usabili */
+.card.spento{
+    background-color: var(--grigio);
+}
+
+.card.spento .card-titolo,
+.card.spento .card-dettagli{
+    opacity: 0.55;
+}
+
+.card .azioni button{
+    padding: 0.35rem 0.5rem;
+    font-size: 0.9rem;
+}
+
+.card-dettagli{
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.card-dettagli div{
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.card-dettagli dd{
+    margin: 0;
+    font-weight: 800;
+    text-align: right;
+}
+
+/* ---------- interruttore acceso / spento ---------- */
+
+.interruttore{
+    position: relative;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.4rem;
+    flex-shrink: 0;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.interruttore input{
+    appearance: none;
+    position: relative;
+    z-index: 1; /* sopra l'area da toccare allargata (::after) */
+    width: 2.75rem;
+    height: 1.5rem;
+    margin: 0;
+    border: var(--bordo);
+    border-radius: 999px;
+    background-color: var(--bianco);
+    cursor: pointer;
+    transition: background-color 0.15s;
+}
+
+.interruttore input::before{
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 0.15rem;
+    width: 0.9rem;
+    height: 0.9rem;
+    border-radius: 50%;
+    background-color: var(--nero);
+    transform: translateY(-50%);
+    transition: left 0.15s;
+}
+
+/* area da toccare di almeno 44 px attorno all'interruttore */
+.interruttore::after{
+    content: "";
+    position: absolute;
+    inset: -10px -6px;
+}
+
+.interruttore input:checked{
+    background-color: var(--verde);
+}
+
+.interruttore input:checked::before{
+    left: calc(100% - 0.9rem - 0.15rem);
+}
+
+.interruttore input:focus-visible{
+    outline: 3px solid var(--rosa);
+    outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce){
+    .interruttore input,
+    .interruttore input::before{
+        transition: none;
+    }
+}
+
+/* ---------- utilità ---------- */
+
+/* nascosto alla vista ma letto dai lettori di schermo */
+.sr-only{
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* ---------- dashboard ---------- */
+
+.dashboard-contenuto{
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.filtri{
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+/* selettore a segmenti Mese / Anno / Sempre */
+fieldset.segmenti{
+    flex: 0 0 auto;
+    gap: 0;
+    padding: 0;
+    background-color: var(--bianco);
+    box-shadow: var(--ombra);
+}
+
+.segmenti label{
+    position: relative;
+    flex-direction: row;
+    padding: 0.35rem 0.85rem;
+    cursor: pointer;
+}
+
+/* area da toccare più alta, invisibile */
+.segmenti label::after{
+    content: "";
+    position: absolute;
+    inset: -7px 0;
+}
+
+.segmenti label + label{
+    border-left: var(--bordo);
+}
+
+.segmenti input{
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.segmenti label:has(input:checked){
+    background-color: var(--rosa);
+    font-weight: 800;
+}
+
+.segmenti label:has(input:focus-visible){
+    outline: 3px solid var(--nero);
+    outline-offset: -6px;
+}
+
+/* ‹ Novembre 2026 › */
+.navigatore{
+    flex: 1 1 14rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.navigatore button{
+    width: 2.5rem;
+    flex-shrink: 0;
+}
+
+.navigatore span{
+    flex: 1;
+    text-align: center;
+    font-weight: 800;
+}
+
+.etichetta{
+    font-size: 1rem;
+    font-weight: 400;
+}
+
+.hero-valore{
+    font-size: 3rem;
+    font-weight: 800;
+    line-height: 1.1;
+    overflow-wrap: anywhere;
+}
+
+.hero-confronto{
+    color: var(--testo-secondario);
+}
+
+.kpi{
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.card.stat{
+    gap: 0.25rem;
+}
+
+.stat-valore{
+    font-size: 1.4rem;
+    font-weight: 800;
+    line-height: 1.2;
+    text-wrap: balance; /* "22 h / 15 min" invece di lasciare "min" da solo */
+}
+
+.messaggio-card{
+    color: var(--testo-secondario);
+}
+
+/* classifica per cliente: barre orizzontali, la più lunga è il cliente che rende di più */
+.classifica{
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.classifica-testo{
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.classifica-nome{
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.classifica-valore{
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.classifica-barra{
+    height: 0.75rem;
+    margin: 0.25rem 0;
+}
+
+.classifica-riempimento{
+    height: 100%;
+    min-width: 2px;
+    background-color: var(--viola);
+    border-radius: 0 4px 4px 0; /* arrotondata in fondo, dritta sulla linea di partenza */
+}
+
+.classifica small{
+    color: var(--testo-secondario);
+}
+
+/* grafico a colonne */
+.grafico{
+    margin: 0;
+    padding-top: 0.5rem;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    column-gap: 0.5rem;
+}
+
+.grafico-asse-y{
+    position: relative;
+    height: 10rem;
+    min-width: 3.25rem;
+    font-size: 0.75rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--testo-secondario);
+}
+
+.grafico-asse-y span{
+    position: absolute;
+    right: 0;
+    transform: translateY(50%);
+    white-space: nowrap;
+}
+
+.grafico-piano{
+    position: relative;
+    height: 10rem;
+    border-bottom: 1px solid var(--nero);
+    touch-action: pan-y;
+}
+
+.grafico-piano:focus-visible{
+    outline: 3px solid var(--rosa);
+    outline-offset: 4px;
+}
+
+.grafico-griglia span{
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background-color: var(--griglia);
+}
+
+.grafico-colonne{
+    position: relative;
+    display: grid;
+    height: 100%;
+    align-items: end;
+}
+
+.grafico-banda{
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    height: 100%;
+    cursor: crosshair;
+}
+
+.grafico-colonna{
+    width: 60%;
+    max-width: 24px;
+    min-height: 2px;
+    background-color: var(--viola);
+    border-radius: 4px 4px 0 0; /* arrotondata in cima, dritta sulla base */
+}
+
+.grafico-colonna.vuota{
+    min-height: 0;
+}
+
+.grafico-banda.attiva .grafico-colonna{
+    background-color: var(--nero);
+}
+
+.grafico-banda.attiva{
+    background-color: rgb(0 0 0 / 0.05);
+}
+
+.grafico-asse-x{
+    display: grid;
+    padding-top: 0.25rem;
+    font-size: 0.75rem;
+    color: var(--testo-secondario);
+    text-align: center;
+    white-space: nowrap;
+}
+
+.grafico-tooltip{
+    position: absolute;
+    bottom: calc(100% + 0.5rem);
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    padding: 0.35rem 0.6rem;
+    background-color: var(--bianco);
+    border: var(--bordo);
+    box-shadow: var(--ombra);
+    font-size: 0.85rem;
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.grafico-tooltip strong{
+    font-size: 1.1rem;
+}
+
+.vista-tabella summary{
+    position: relative;
+    cursor: pointer;
+    font-weight: 800;
+}
+
+/* area da toccare più alta, invisibile */
+.vista-tabella summary::after{
+    content: "";
+    position: absolute;
+    inset: -12px 0;
+}
+
+.vista-tabella table{
+    width: 100%;
+    margin-top: 0.5rem;
+    border-collapse: collapse;
+    font-variant-numeric: tabular-nums;
+}
+
+.vista-tabella th,
+.vista-tabella td{
+    padding: 0.35rem 0.25rem;
+    border-bottom: 1px solid var(--griglia);
+    text-align: right;
+}
+
+.vista-tabella th:first-child,
+.vista-tabella td:first-child{
+    text-align: left;
+}
+
+/* ---------- barra di navigazione ---------- */
 
 .bottom-bar{
     position: fixed;
     bottom: 0;
     left: 0;
     width: 100%;
-    background-color: #65fa8a;
     display: flex;
     padding-bottom: env(safe-area-inset-bottom);
-    border-top: solid #000000;
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+    background-color: var(--verde);
+    border-top: var(--bordo);
 }
 
 .bottom-bar a{
     flex: 1;
-    text-align: center;
-    padding: 1rem;
-    color: #FFFFFF;
+    height: var(--altezza-barra);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--bianco);
+    font-size: 1.25rem;
 }
 
 .bottom-bar a.active{
-    color: #f29ff5;
-}
-
-fieldset{
-    border: solid #000000;
-    display: flex;
-    flex: 1;
-    gap: 1rem;
-}
-
-fieldset label{
-    flex: 1;
+    color: var(--rosa);
 }

@@ -1,39 +1,131 @@
 <!DOCTYPE html>
-<html>
+<html lang="it">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-        <title>Planner</title>
-        <link rel="stylesheet" href="clienti.css">
+        <meta name="description" content="Ore lavorate, clienti e guadagni.">
+        <!-- Schermata Home e app installata (Android e iPhone) -->
+        <meta name="theme-color" content="#fffab9">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-title" content="Planner">
+        <meta name="apple-mobile-web-app-status-bar-style" content="default">
+        <!-- iPhone: non trasformare i numeri in link telefonici -->
+        <meta name="format-detection" content="telephone=no">
+        <link rel="manifest" href="manifest.webmanifest">
+        <link rel="icon" href="icone/icona-192.png" type="image/png">
+        <link rel="apple-touch-icon" href="icone/apple-touch-icon.png">
+        <title>Clienti · Planner</title>
+        <link rel="stylesheet" href="style.css">
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Sniglet:wght@400;800&display=swap" rel="stylesheet">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+        <script src="dati.js" defer></script>
+        <script src="ui.js" defer></script>
+        <script src="clienti.js" defer></script>
     </head>
     <body>
-        <button popovertarget="new-client">Aggiungi cliente</button>
+        <main>
+            <h1>Clienti</h1>
 
+            <button type="button" popovertarget="new-client">Aggiungi cliente</button>
+
+            <p class="messaggio" id="nessun-cliente" hidden>
+                Non hai ancora nessun cliente. Aggiungine uno per iniziare a registrare le ore.
+            </p>
+
+            <ul class="lista-card" id="lista-clienti"></ul>
+        </main>
+
+        <!-- Nuovo cliente -->
         <form id="new-client" popover>
+            <h2>Nuovo cliente</h2>
             <label>
                 Nome
-                <input type="text" id="cliente">
-            </label>    
+                <input type="text" name="nome" required maxlength="60" autocomplete="off">
+            </label>
             <label>
                 Paga oraria (€/h)
-                <input type="number" id="paga">
+                <input type="number" name="tariffa" required min="0" step="0.01" inputmode="decimal">
             </label>
             <button type="submit">Crea</button>
         </form>
 
+        <!-- Modifica cliente -->
+        <form id="modifica-cliente" popover tabindex="-1">
+            <h2>Modifica cliente</h2>
+            <input type="hidden" name="clienteId">
+            <label>
+                Nome
+                <input type="text" name="nome" required maxlength="60" autocomplete="off">
+            </label>
+            <label>
+                Paga oraria (€/h)
+                <input type="number" name="tariffa" required min="0" step="0.01" inputmode="decimal">
+            </label>
+            <!-- Compare solo se la paga cambia e il cliente ha già delle attività -->
+            <fieldset class="scelta" id="scelta-tariffa" hidden disabled>
+                <legend>Applica la nuova paga</legend>
+                <label class="opzione">
+                    <input type="radio" name="applica" value="tutte" required>
+                    <span>
+                        A tutte le attività già salvate
+                        <small id="nota-tutte"></small>
+                    </span>
+                </label>
+                <label class="opzione">
+                    <input type="radio" name="applica" value="da-oggi" required>
+                    <span>
+                        Dalla data odierna in poi
+                        <small id="nota-da-oggi"></small>
+                    </span>
+                </label>
+            </fieldset>
+            <div class="azioni">
+                <button type="button" popovertarget="modifica-cliente" popovertargetaction="hide">Annulla</button>
+                <button type="submit">Salva</button>
+            </div>
+        </form>
 
-        <div class="bottom-bar">
-            <a href="clienti.html" class="active"><i class="fa-solid fa-user"></i></a>
-            <a href="index.html"><i class="fa-solid fa-briefcase"></i></a>
-            <a href="#dashboard"><i class="fa-solid fa-money-bill-wave"></i></a>
-        </div>
+        <!-- Conferma eliminazione -->
+        <dialog id="conferma-eliminazione" aria-labelledby="titolo-eliminazione">
+            <form method="dialog">
+                <h2 id="titolo-eliminazione" data-campo="titolo"></h2>
+                <p data-campo="testo"></p>
+                <p><small>Se vuoi solo che non compaia più tra i clienti da scegliere, spegnilo invece di eliminarlo: le sue attività resteranno.</small></p>
+                <div class="azioni">
+                    <button value="annulla" autofocus>Annulla</button>
+                    <button value="conferma" class="pericolo">Elimina</button>
+                </div>
+            </form>
+        </dialog>
 
-        <ul id="lista"></ul>
+        <template id="modello-cliente">
+            <li class="card">
+                <div class="card-intestazione">
+                    <h2 class="card-titolo" data-campo="nome"></h2>
+                    <label class="interruttore">
+                        <input type="checkbox" role="switch" data-azione="attivo">
+                        <span data-campo="stato"></span>
+                    </label>
+                </div>
+                <dl class="card-dettagli">
+                    <div><dt>Paga oraria</dt><dd data-campo="tariffa"></dd></div>
+                    <div><dt>Ore registrate</dt><dd data-campo="ore"></dd></div>
+                    <div><dt>Totale</dt><dd data-campo="totale"></dd></div>
+                </dl>
+                <div class="azioni">
+                    <button type="button" data-azione="modifica"><i class="fa-solid fa-pen" aria-hidden="true"></i> Modifica</button>
+                    <button type="button" class="pericolo" data-azione="elimina"><i class="fa-solid fa-trash" aria-hidden="true"></i> Elimina</button>
+                </div>
+            </li>
+        </template>
 
-        <script src="clienti.js"></script>
+        <nav class="bottom-bar" aria-label="Navigazione principale">
+            <a href="clienti.html" class="active" aria-current="page" aria-label="Clienti"><i class="fa-solid fa-user" aria-hidden="true"></i></a>
+            <a href="index.html" aria-label="Ore lavorate"><i class="fa-solid fa-briefcase" aria-hidden="true"></i></a>
+            <a href="guadagni.html" aria-label="Guadagni"><i class="fa-solid fa-money-bill-wave" aria-hidden="true"></i></a>
+        </nav>
     </body>
 </html>
