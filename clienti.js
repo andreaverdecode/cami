@@ -5,6 +5,7 @@ const formModifica = document.getElementById("modifica-cliente");
 const sceltaTariffa = document.getElementById("scelta-tariffa");
 const notaTutte = document.getElementById("nota-tutte");
 const notaDaOggi = document.getElementById("nota-da-oggi");
+const notaSaldate = document.getElementById("nota-saldate");
 const dialogElimina = document.getElementById("conferma-eliminazione");
 const listaClienti = document.getElementById("lista-clienti");
 const nessunCliente = document.getElementById("nessun-cliente");
@@ -24,19 +25,21 @@ const mostraClienti = UI.protetto(() => {
     // Somma minuti e importi delle attività di ogni cliente.
     const totali = new Map();
     for (const a of attivita) {
-        const totale = totali.get(a.clienteId) ?? { minuti: 0, centesimi: 0 };
+        const totale = totali.get(a.clienteId) ?? { minuti: 0, centesimi: 0, daIncassare: 0 };
         totale.minuti += a.minuti;
         totale.centesimi += Dati.importo(a);
+        if (!a.saldato) totale.daIncassare += Dati.importo(a);
         totali.set(a.clienteId, totale);
     }
 
     const card = clienti.map((cliente) => {
-        const totale = totali.get(cliente.id) ?? { minuti: 0, centesimi: 0 };
+        const totale = totali.get(cliente.id) ?? { minuti: 0, centesimi: 0, daIncassare: 0 };
         const elemento = UI.daModello(modelloCliente, {
             nome: cliente.nome,
             tariffa: `${UI.euro(cliente.tariffaCentesimi)}/h`,
             ore: UI.durata(totale.minuti),
             totale: UI.euro(totale.centesimi),
+            daIncassare: UI.euro(totale.daIncassare),
         });
         elemento.dataset.id = cliente.id;
         // Etichette per i lettori di schermo: "Modifica Studio Rossi" invece di tanti "Modifica".
@@ -118,12 +121,19 @@ function apriModifica(id) {
     campi.nome.value = cliente.nome;
     campi.tariffa.value = (cliente.tariffaCentesimi / 100).toFixed(2);
     formModifica.dataset.tariffaOriginale = cliente.tariffaCentesimi;
-    formModifica.dataset.numeroAttivita = attivita.length;
+    // Le attività già saldate non vengono ricalcolate: contano solo le altre.
+    const nonSaldate = attivita.filter((a) => !a.saldato);
+    const saldate = attivita.length - nonSaldate.length;
+    formModifica.dataset.numeroAttivita = nonSaldate.length;
 
     const dataOggi = Dati.oggi();
-    const primaDiOggi = attivita.filter((a) => a.data < dataOggi).length;
-    const daOggi = attivita.length - primaDiOggi;
-    notaTutte.textContent = `Ricalcola ${contaAttivita(attivita.length)} di questo cliente.`;
+    const primaDiOggi = nonSaldate.filter((a) => a.data < dataOggi).length;
+    const daOggi = nonSaldate.length - primaDiOggi;
+    notaTutte.textContent = `Ricalcola ${contaAttivita(nonSaldate.length)} da saldare di questo cliente.`;
+    notaSaldate.hidden = saldate === 0;
+    notaSaldate.textContent = saldate === 1
+        ? "L'attività già saldata non viene ricalcolata."
+        : `Le ${saldate} attività già saldate non vengono ricalcolate.`;
     notaDaOggi.textContent = primaDiOggi === 0
         ? "Non ci sono attività prima di oggi: il risultato è lo stesso."
         : `${contaAttivita(primaDiOggi)} prima di oggi ${primaDiOggi === 1 ? "mantiene" : "mantengono"} la paga attuale`

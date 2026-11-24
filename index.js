@@ -31,6 +31,11 @@ function impostaDurata(form, minuti) {
 
 // ---------- elenco ----------
 
+function aggiornaSaldato(card, saldato) {
+    card.querySelector('[data-azione="saldato"]').checked = saldato;
+    card.querySelector('[data-campo="stato"]').textContent = saldato ? "Saldato" : "Da saldare";
+}
+
 function mostraAttivita(clienti, attivita) {
     const nomi = new Map(clienti.map((c) => [c.id, c.nome]));
     const card = attivita.map((a) => {
@@ -47,6 +52,8 @@ function mostraAttivita(clienti, attivita) {
         elemento.querySelector("time").dateTime = a.data;
         elemento.querySelector('[data-azione="modifica"]').setAttribute("aria-label", `Modifica attività di ${nome} del ${data}`);
         elemento.querySelector('[data-azione="elimina"]').setAttribute("aria-label", `Elimina attività di ${nome} del ${data}`);
+        elemento.querySelector('[data-azione="saldato"]').setAttribute("aria-label", `Attività di ${nome} del ${data} saldata`);
+        aggiornaSaldato(elemento, a.saldato === true);
         return elemento;
     });
     listaAttivita.replaceChildren(...card);
@@ -75,6 +82,21 @@ listaAttivita.addEventListener("click", UI.protetto((evento) => {
     if (bottone.dataset.azione === "modifica") apriModifica(id);
     if (bottone.dataset.azione === "elimina") chiediEliminazione(id);
 }));
+
+// Interruttore "Saldato": aggiorniamo solo il riquadro, così non perde il focus.
+listaAttivita.addEventListener("change", (evento) => {
+    const interruttore = evento.target.closest('[data-azione="saldato"]');
+    if (!interruttore) return;
+    const card = interruttore.closest(".card");
+    try {
+        Dati.impostaSaldato(card.dataset.id, interruttore.checked);
+    } catch (errore) {
+        UI.mostraErrore(null, errore);
+        aggiorna();
+        return;
+    }
+    aggiornaSaldato(card, interruttore.checked);
+});
 
 /** Restituisce { attivita, clienti } o null se nel frattempo l'attività è stata eliminata. */
 function datiAttivita(id) {
