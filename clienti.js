@@ -132,7 +132,9 @@ function apriModifica(id) {
 
     aggiornaSceltaTariffa();
     formModifica.showPopover();
-    campi.nome.focus();
+    // Il focus va sul form e non sul campo Nome: sul telefono la tastiera
+    // si aprirebbe subito coprendo metà del form.
+    formModifica.focus();
 }
 
 function contaAttivita(n) {

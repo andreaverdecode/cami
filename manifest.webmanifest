@@ -1,0 +1,18 @@
+{
+    "id": "./",
+    "name": "Planner",
+    "short_name": "Planner",
+    "description": "Ore lavorate, clienti e guadagni.",
+    "lang": "it",
+    "dir": "ltr",
+    "start_url": "./index.html",
+    "scope": "./",
+    "display": "standalone",
+    "background_color": "#fffab9",
+    "theme_color": "#fffab9",
+    "icons": [
+        { "src": "icone/icona-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+        { "src": "icone/icona-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+        { "src": "icone/icona-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    ]
+}

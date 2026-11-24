@@ -90,5 +90,17 @@ const UI = (() => {
         };
     }
 
+    // iPhone: senza un ascoltatore "touchstart" Safari non applica lo stile :active
+    // (l'effetto "bottone premuto").
+    document.addEventListener("touchstart", () => {}, { passive: true });
+
+    // Service worker: app utilizzabile offline e installabile sulla schermata Home.
+    // Funziona solo quando l'app è pubblicata su https (o in localhost), non aprendo i file dal disco.
+    if ("serviceWorker" in navigator && location.protocol !== "file:") {
+        window.addEventListener("load", () => {
+            navigator.serviceWorker.register("sw.js").catch((errore) => console.warn("Service worker non registrato:", errore));
+        });
+    }
+
     return Object.freeze({ euro, durata, data, daModello, mostraErrore, conferma, protetto });
 })();

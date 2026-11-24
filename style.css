@@ -22,6 +22,47 @@
     box-sizing: border-box;
 }
 
+/* ---------- comportamento da app su smartphone (nessun effetto sull'aspetto) ---------- */
+
+html{
+    /* iPhone in orizzontale: non ingrandire il testo da solo */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    /* niente riquadro grigio/blu al tocco: c'è già l'effetto "premuto" dei bottoni */
+    -webkit-tap-highlight-color: transparent;
+    /* niente zoom con il doppio tocco sui comandi (lo zoom con due dita resta) */
+    touch-action: manipulation;
+}
+
+/* Con un form o una conferma aperti lo sfondo non scorre. */
+html:has([popover]:popover-open),
+html:has(dialog[open]){
+    overflow: hidden;
+}
+
+/* Comandi: niente selezione del testo o anteprima dei link con la pressione prolungata. */
+button,
+summary,
+.bottom-bar,
+.segmenti,
+.interruttore{
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+}
+
+/* Safari su iPhone arrotonda da solo campi e bottoni: il design è squadrato. */
+button,
+input:not([type="checkbox"], [type="radio"]),
+select{
+    border-radius: 0;
+}
+
+/* Elementi che ricevono il focus solo da codice (es. form appena aperto): nessun contorno al tocco. */
+[tabindex="-1"]:focus:not(:focus-visible){
+    outline: none;
+}
+
 /* l'attributo hidden deve vincere anche su display: flex/grid */
 [hidden]{
     display: none !important;
@@ -30,6 +71,10 @@
 body{
     margin: 0;
     padding: 1rem;
+    /* in orizzontale su iPhone: lontano dalla tacca (notch) e dagli angoli arrotondati */
+    padding-top: max(1rem, env(safe-area-inset-top));
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
     /* spazio per non finire nascosti sotto la barra in basso */
     padding-bottom: calc(var(--altezza-barra) + env(safe-area-inset-bottom) + 1rem);
     background-color: var(--giallo);
@@ -68,12 +113,22 @@ select{
 }
 
 button{
+    position: relative;
     width: 100%;
     padding: 0.5rem;
     background-color: var(--rosa);
     border: var(--bordo);
     box-shadow: var(--ombra);
     cursor: pointer;
+}
+
+/* Area da toccare più grande del bottone (almeno 44 px, come chiedono Apple e Google),
+   senza cambiarne l'aspetto. Si misura dall'interno del bordo: 8px = 3px di bordo + 5px.
+   In orizzontale resta sotto metà dello spazio tra due bottoni affiancati. */
+button::after{
+    content: "";
+    position: absolute;
+    inset: -8px -6px;
 }
 
 button:active{
@@ -100,6 +155,18 @@ form{
     border: var(--bordo);
     box-shadow: var(--ombra);
     background-color: var(--verde);
+}
+
+/* Se il form è più alto dello schermo (telefono in orizzontale) si scorre al suo interno. */
+form[popover]{
+    max-height: calc(100vh - 2rem);
+    max-height: calc(100dvh - 2rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+dialog{
+    overscroll-behavior: contain;
 }
 
 form:popover-open,
@@ -257,6 +324,7 @@ input[type="radio"]{
 /* ---------- interruttore acceso / spento ---------- */
 
 .interruttore{
+    position: relative;
     flex-direction: row;
     align-items: center;
     gap: 0.4rem;
@@ -268,6 +336,7 @@ input[type="radio"]{
 .interruttore input{
     appearance: none;
     position: relative;
+    z-index: 1; /* sopra l'area da toccare allargata (::after) */
     width: 2.75rem;
     height: 1.5rem;
     margin: 0;
@@ -289,6 +358,13 @@ input[type="radio"]{
     background-color: var(--nero);
     transform: translateY(-50%);
     transition: left 0.15s;
+}
+
+/* area da toccare di almeno 44 px attorno all'interruttore */
+.interruttore::after{
+    content: "";
+    position: absolute;
+    inset: -10px -6px;
 }
 
 .interruttore input:checked{
@@ -356,6 +432,13 @@ fieldset.segmenti{
     flex-direction: row;
     padding: 0.35rem 0.85rem;
     cursor: pointer;
+}
+
+/* area da toccare più alta, invisibile */
+.segmenti label::after{
+    content: "";
+    position: absolute;
+    inset: -7px 0;
 }
 
 .segmenti label + label{
@@ -586,8 +669,16 @@ fieldset.segmenti{
 }
 
 .vista-tabella summary{
+    position: relative;
     cursor: pointer;
     font-weight: 800;
+}
+
+/* area da toccare più alta, invisibile */
+.vista-tabella summary::after{
+    content: "";
+    position: absolute;
+    inset: -12px 0;
 }
 
 .vista-tabella table{
@@ -618,6 +709,8 @@ fieldset.segmenti{
     width: 100%;
     display: flex;
     padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
     background-color: var(--verde);
     border-top: var(--bordo);
 }

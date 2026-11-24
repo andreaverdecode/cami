@@ -3,6 +3,18 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+        <meta name="description" content="Ore lavorate, clienti e guadagni.">
+        <!-- Schermata Home e app installata (Android e iPhone) -->
+        <meta name="theme-color" content="#fffab9">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-title" content="Planner">
+        <meta name="apple-mobile-web-app-status-bar-style" content="default">
+        <!-- iPhone: non trasformare i numeri in link telefonici -->
+        <meta name="format-detection" content="telephone=no">
+        <link rel="manifest" href="manifest.webmanifest">
+        <link rel="icon" href="icone/icona-192.png" type="image/png">
+        <link rel="apple-touch-icon" href="icone/apple-touch-icon.png">
         <title>Clienti · Planner</title>
         <link rel="stylesheet" href="style.css">
         <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -41,7 +53,7 @@
         </form>
 
         <!-- Modifica cliente -->
-        <form id="modifica-cliente" popover>
+        <form id="modifica-cliente" popover tabindex="-1">
             <h2>Modifica cliente</h2>
             <input type="hidden" name="clienteId">
             <label>
